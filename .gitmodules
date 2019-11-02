@@ -1,0 +1,3 @@
+[submodule "third-party/incppect"]
+	path = third-party/incppect
+	url = https://github.com/ggerganov/incppect
