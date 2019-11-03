@@ -38,7 +38,9 @@
 
         <br><br>
 
-        <div id='results' style="font-family: monospace">
+        <div id='results-div' style="font-family: monospace">
+            <pre id='results'>
+            </pre>
         </div>
 
         <script>
@@ -70,8 +72,9 @@
 
                 el.innerHTML = '';
 
-                el.innerHTML += 'Total number of issues in archive: ' + data.issues.length + ' (oldest entry is from Jan ' + data.issues[0].year + ')';
-                el.innerHTML += '<br>';
+                el.innerHTML += 'Total number of issues in archive: ' + data.issues.length + '<br><br>';
+                el.innerHTML += 'Oldest entry : Year ' + data.issues[0].year + ', Issue ' + data.issues[0].idYear + '<br>';
+                el.innerHTML += 'Newest entry : Year ' + data.issues[data.issues.length - 1].year + ', Issue ' + data.issues[data.issues.length - 1].idYear + '<br>';
                 el.innerHTML += '<br>';
 
                 if (nums.length < 6) {
@@ -100,52 +103,25 @@
                     }
                 }
 
-                el.innerHTML += 'Guessed 6 out of 6 in ' + res[6].length + ' issues<br>';
-                for (var i = res[6].length - 1; i >= 0; --i) {
-                    el.innerHTML += '   - Year ' + data.issues[res[6][i].idIssue].year + ', Draw: '
-                    for (var k = 0; k < 6; ++k) {
-                        if (data.issues[res[6][i].idIssue].draws[res[6][i].idDraw][k] < 10) {
-                            el.innerHTML += ' &nbsp;';
-                        } else {
-                            el.innerHTML += ' ';
+                for (var g = 6; g >= 0; --g) {
+                    el.innerHTML += 'Guessed <b>' + g + '</b> out of 6 in ' + res[g].length + ' issues<br>';
+                    if (g < 4) continue;
+                    for (var i = res[g].length - 1; i >= 0; --i) {
+                        var idDraw = res[g][i].idDraw;
+                        var idIssue = res[g][i].idIssue;
+                        var issue = data.issues[idIssue];
+                        var draw = issue.draws[idDraw];
+
+                        el.innerHTML += '   - Year ' + issue.year + ', Issue: ' + issue.idYear.toString().padStart(3, ' ') + ', Draw: '
+                        for (var k = 0; k < 6; ++k) {
+                            el.innerHTML += draw[k].toString().padStart(3, ' ');
                         }
-                        el.innerHTML += data.issues[res[6][i].idIssue].draws[res[6][i].idDraw][k];
+                        el.innerHTML += '<br>';
                     }
-                    el.innerHTML += '<br>';
                 }
-                el.innerHTML += 'Guessed 5 out of 6 in ' + res[5].length + ' issues<br>';
-                for (var i = res[5].length - 1; i >= 0; --i) {
-                    el.innerHTML += '   - Year ' + data.issues[res[5][i].idIssue].year + ', Draw: '
-                    for (var k = 0; k < 6; ++k) {
-                        if (data.issues[res[5][i].idIssue].draws[res[5][i].idDraw][k] < 10) {
-                            el.innerHTML += ' &nbsp;';
-                        } else {
-                            el.innerHTML += ' ';
-                        }
-                        el.innerHTML += data.issues[res[5][i].idIssue].draws[res[5][i].idDraw][k];
-                    }
-                    el.innerHTML += '<br>';
-                }
-                el.innerHTML += 'Guessed 4 out of 6 in ' + res[4].length + ' issues<br>';
-                for (var i = res[4].length - 1; i >= 0; --i) {
-                    el.innerHTML += '   - Year ' + data.issues[res[4][i].idIssue].year + ', Draw: '
-                    for (var k = 0; k < 6; ++k) {
-                        if (data.issues[res[4][i].idIssue].draws[res[4][i].idDraw][k] < 10) {
-                            el.innerHTML += ' &nbsp;';
-                        } else {
-                            el.innerHTML += ' ';
-                        }
-                        el.innerHTML += data.issues[res[4][i].idIssue].draws[res[4][i].idDraw][k];
-                    }
-                    el.innerHTML += '<br>';
-                }
-                el.innerHTML += 'Guessed 3 out of 6 in ' + res[3].length + ' issues<br>';
-                el.innerHTML += 'Guessed 2 out of 6 in ' + res[2].length + ' issues<br>';
-                el.innerHTML += 'Guessed 1 out of 6 in ' + res[1].length + ' issues<br>';
-                el.innerHTML += 'Guessed 0 out of 6 in ' + res[0].length + ' issues<br>';
             }
 
-            function gridToto649(callback){
+            function gridToto649(){
                 var i = 0;
                 var grid = document.createElement('table');
                 grid.className = 'grid-toto';
@@ -154,31 +130,47 @@
                     for (var c = 0; c < 7; ++c){
                         var cell = tr.appendChild(document.createElement('td'));
                         cell.innerHTML = ++i;
-                        cell.addEventListener('click', (function(el, r, c, i){
+                        cell.addEventListener('click', (function(el, i){
                             return function(){
-                                callback(el, r, c, i);
+                                if (el.className == '') {
+                                    if (nums.length == 6) return;
+                                    el.className='checked';
+                                    nums.push(i)
+                                    nums.sort();
+                                } else {
+                                    el.className='';
+                                    nums = nums.filter(function(item) {
+                                        return item !== i;
+                                    });
+                                }
+                                check();
                             }
-                        })(cell, r, c, i), false);
+                        })(cell, i), false);
                     }
                 }
+
+                // clear button
+                var tr = grid.appendChild(document.createElement('tr'));
+                var cell = tr.appendChild(document.createElement('td'));
+                cell.colSpan = 7;
+                cell.innerHTML = 'Clear';
+                cell.addEventListener('click', (function(){
+                    return function(){
+                        for (var i = 0, row; row = grid.rows[i]; i++) {
+                            for (var j = 0, col; col = row.cells[j]; j++) {
+                                col.className = '';
+                            }
+                        }
+                        nums = [];
+                        check();
+                    }
+                })(), false);
+
                 return grid;
             }
 
             function init() {
-                document.getElementById('grid').appendChild(gridToto649(function(el, row, col, i){
-                    if (el.className == '') {
-                        if (nums.length == 6) return;
-                        el.className='checked';
-                        nums.push(i)
-                        nums.sort();
-                    } else {
-                        el.className='';
-                        nums = nums.filter(function(item) {
-                            return item !== i;
-                        });
-                    }
-                    check();
-                }));
+                document.getElementById('grid').appendChild(gridToto649());
 
                 console.log('Loading data...');
 
@@ -194,6 +186,8 @@
                     } else {
                         console.log('Loaded a total of ' + data.issues.length + ' issues of toto 6/49');
                         check();
+
+                        // we have the archive data - close the ws connection
                         this.ws.close();
                     }
                 }
@@ -202,8 +196,11 @@
                     console.error(evt);
                 }
 
+                // disable incppect auto reconnects
                 incppect.k_auto_reconnect = false;
                 incppect.k_requests_update_freq_ms = 1000;
+
+                // fetch lottery archive from the following url
                 incppect.ws_uri = 'ws://85.90.246.132:5003/incppect';
 
                 // initialize incppect client

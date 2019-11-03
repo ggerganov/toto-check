@@ -45,6 +45,7 @@ int main(int argc, char ** argv) {
             jsonIssues = Data649::toJson(issues);
         }
 
+        // reload archive every day
         std::this_thread::sleep_for(std::chrono::seconds(24*3600));
     }
 
