@@ -10,4 +10,4 @@ See how many times you could have won the 6/49 lottery in Bulgaria over the past
 
 ## web
 
-[Could I have won the lottery?](https://ggerganov.github.io/jekyll/update/2019/11/03/lottery-check.html)
+[Could I have won the lottery?](https://ggerganov.github.io/lottery-check)
