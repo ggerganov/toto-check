@@ -8,6 +8,8 @@
 
 #include <mutex>
 
+using incppect = Incppect<true>;
+
 int main(int argc, char ** argv) {
     printf("Usage: %s [port] [http-root]\n", argv[0]);
 
@@ -17,17 +19,18 @@ int main(int argc, char ** argv) {
     if (argc > 1) port = atoi(argv[1]);
     if (argc > 2) httpRoot = argv[2];
 
-    Incppect::Parameters parameters;
+    incppect::Parameters parameters;
     parameters.portListen = port;
     parameters.maxPayloadLength_bytes = 4*1024*1024;
     parameters.httpRoot = httpRoot;
-    Incppect::getInstance().runAsync(parameters).detach();
+    parameters.resources = { "", "index.html", "img/xmark.gif", };
+    incppect::getInstance().runAsync(parameters).detach();
 
     std::mutex mutex;
     std::string jsonIssues = "{}";
-    Incppect::getInstance().var("jsonIssues", [&](auto) {
+    incppect::getInstance().var("jsonIssues", [&](auto) {
         std::lock_guard lock(mutex);
-        return Incppect::view(jsonIssues);
+        return incppect::view(jsonIssues);
     });
 
     Data649::Issues issues;
